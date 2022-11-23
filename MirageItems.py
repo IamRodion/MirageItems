@@ -11,7 +11,7 @@ BANNER = """███╗   ███╗██╗   ██╗    ██╗██�
 ╚═╝     ╚═╝   ╚═╝       ╚═╝   ╚═╝   ╚══════╝╚═╝     ╚═╝╚══════╝"""
 
 INFO = "\n[i] Programa que administra items de Mirage Realms en una base de datos SQLite.\n[i] Creado por Rodion (github.com/IamRodion)\n"
-menu1 = """[1] Registrar Item\n[2] Buscar Item\n[3] Modificar Item\n[4] Borrar Item\n[5] Modo Venta\n[6] Salir\n\n[?] Indique una opción: """
+MENU1 = "[1] Registrar Item\n[2] Buscar Item\n[3] Modificar Item\n[4] Borrar Item\n[5] Modo Venta\n[6] Salir\n\n[?] Indique una opción: "
 
 def logWrite(text): # Función que registra texto en el archivo de logs.
     with open('log.txt', 'a') as log: # Abre el archivo de log.
@@ -84,7 +84,7 @@ def showHeader(): # Función que limpia la pantalla, muestra el banner y la info
 
 def mainMenu(): # Función que muestra el menú principal, y devuelve la opción que el usuario desea ejecutar.
     showHeader()
-    option = input(menu1)
+    option = input(MENU1)
     logWrite(f"Se ejecutó la función 'mainMenu()' correctamente.")
     return option
 

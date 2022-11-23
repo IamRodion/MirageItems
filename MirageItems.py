@@ -106,7 +106,7 @@ def main(): # Función principal.
         elif option == "6": # Salir.
             break
         else:
-            print("[!] La opción indicada es incorrecta.")
+            input("[!] La opción indicada es incorrecta.")
 
 if __name__ == '__main__':
     try:

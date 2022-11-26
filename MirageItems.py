@@ -50,23 +50,30 @@ def insertRow(Name, Type, Level, Armour, PrimaryStat, AmountPrimaryStat, Stamina
     logWrite(f"Se ejecutó la función 'insertRow()' correctamente.")
 
 def createItem(): # Función que obtiene los datos para crear un item y lo envía a la base de datos.
-    Name = input("[Name]: ")
-    Type = input("[Type]: ")
-    Level = input("[Level]: ")
-    Armour = int(input("[Armour]: "))
-    PrimaryStat = input("[Name of Primary Stat]: ")
-    AmountPrimaryStat = int(input("[Amount of Primary Stat]: "))
-    Stamina = int(input("[Amount of Stamina]: "))
-    SecondaryStat = input("[Name of Secondary Stat]: ")
-    AmountSecondaryStat = int(input("[Amount of Secondary Stat]: "))
-    BonusModifier1 = input("[First Bonus Modifier]: ")
-    BonusModifier2 = input("[Second Bonus Modifier]: ")
-    Enchant = input("[Enchant]: ")
-    Sale = input("[Sale]: ")
-    insertRow(Name, Type, Level, Armour, PrimaryStat, AmountPrimaryStat, Stamina, SecondaryStat, AmountSecondaryStat, BonusModifier1, BonusModifier2, Enchant, Sale) # Registra los datos como un nuevo registro en la base de datos.
+    showHeader()
+    print("\tREGISTRANDO ITEM\n")
+    try:
+        Name = input("[Name]: ")
+        Type = input("[Type]: ")
+        Level = input("[Level]: ")
+        Armour = int(input("[Armour]: "))
+        PrimaryStat = input("[Name of Primary Stat]: ")
+        AmountPrimaryStat = int(input("[Amount of Primary Stat]: "))
+        Stamina = int(input("[Amount of Stamina]: "))
+        SecondaryStat = input("[Name of Secondary Stat]: ")
+        AmountSecondaryStat = int(input("[Amount of Secondary Stat]: "))
+        BonusModifier1 = input("[First Bonus Modifier]: ")
+        BonusModifier2 = input("[Second Bonus Modifier]: ")
+        Enchant = input("[Enchant]: ")
+        Sale = input("[Sale]: ")
+        insertRow(Name, Type, Level, Armour, PrimaryStat, AmountPrimaryStat, Stamina, SecondaryStat, AmountSecondaryStat, BonusModifier1, BonusModifier2, Enchant, Sale) # Registra los datos como un nuevo registro en la base de datos.
+    except KeyboardInterrupt:
+        pass
+    except ValueError:
+        input("\n[!] Se produjo un error, el dato ingresado no es del tipo requerido.")
     logWrite(f"Se ejecutó la función 'createItem()' correctamente.")
 
-def showItem(query): # Muestra los datos resultantes de una query en una tabla.
+def showItem(query): # Muestra en una tabla los datos resultantes de una query.
     cursor, conn = createCursor("MirageItems.db") # Obtiene el objeto cursor y conn de la base de datos.
     cursor.execute(query) # Se ejecuta la solicitud pasada como argumento.
     data = cursor.fetchall() # Se vuelcan los datos en una variable.
@@ -74,7 +81,33 @@ def showItem(query): # Muestra los datos resultantes de una query en una tabla.
     conn.close() # Cerrar conexión
     print(tabulate(data, headers=["Name", "Type", "Level", "Armour", "Primary", "#", "Stamina", "Secondary", "#", "Bonus", "Bonus", "Enchant", "Sale"])) # Muestra los datos almacenados en la variable de forma ordenada en una tabla.
     logWrite(f"Se ejecutó la función 'showItem()' correctamente.")
-    input("\n[i] Presione Enter para continuar.")
+
+def searchItem(): # Función que crea una query dependiendo de los filtros de búsqueda y la pasa a la función showItem().
+    
+    query = 'SELECT * FROM "Armaduras" ORDER BY Level' # Consulta SQL a ser ejecutada.
+    dataSearch = { # Diccionario con los datos por defecto de la búsqueda.
+        "Nombre": "",
+        "Tipo": "",
+        "Nivel": ""
+    }
+
+    while True: # Loop infinito.
+        try:
+            showHeader() # Función que limpia la pantalla, muestra el banner y la información.
+            print("\tFILTROS ACTUALES\n")
+            print(f"[Nombre]: {dataSearch['Nombre']}\n[Tipo]: {dataSearch['Tipo']}\n[Level]: {dataSearch['Nivel']}\n") # Muestra los filtros actuales.
+            showItem(query) # Mostrar los datos con la query actual.
+
+            print("\n\tPARÁMETROS DE BÚSQUEDA\n[i] Enter para omitir filtro, 'Ctrl+C' para volver al menú anterior\n")
+
+            for data in dataSearch.keys(): # Itera sobre los parámetros del filtro para que el usuario pueda elegir que datos buscar.
+                dataSearch[data] = input(f'[{data}]: ') # Solicita al usuario el tipo de item que busca basado en sus datos.
+
+            query = f'SELECT * FROM "Armaduras" WHERE Name LIKE "%{dataSearch["Nombre"]}%" AND Type LIKE "%{dataSearch["Tipo"]}%" AND Level LIKE "%{dataSearch["Nivel"]}%" ORDER BY Level' # Query que toma los datos del filtro indicados por el usuario y los solicita a la base de datos.
+        except KeyboardInterrupt: # Para salir del menú de búsqueda, se debe presionar Ctrl+C.
+            break
+
+    logWrite(f"Se ejecutó la función 'searchItem()' correctamente.")
 
 def showHeader(): # Función que limpia la pantalla, muestra el banner y la información.
     clearScreen()
@@ -92,11 +125,9 @@ def main(): # Función principal.
     while True:
         option = mainMenu()
         if option == "1": # Registrar Item.
-            showHeader()
             createItem()
         elif option == "2": # Buscar Item.
-            showHeader()
-            showItem("SELECT * FROM 'Armaduras' ORDER BY Level")
+            searchItem()
         elif option == "3": # Modificar Item
             pass
         elif option == "4": # Borrar Item.

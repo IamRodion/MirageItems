@@ -79,12 +79,11 @@ def showItem(query): # Muestra en una tabla los datos resultantes de una query.
     data = cursor.fetchall() # Se vuelcan los datos en una variable.
     conn.commit() # Aplicar cambios
     conn.close() # Cerrar conexión
-    print(tabulate(data, headers=["Name", "Type", "Level", "Armour", "Primary", "#", "Stamina", "Secondary", "#", "Bonus", "Bonus", "Enchant", "Sale"])) # Muestra los datos almacenados en la variable de forma ordenada en una tabla.
+    print(tabulate(data, headers=["ID", "Name", "Type", "Level", "Armour", "Primary", "#", "Stamina", "Secondary", "#", "Bonus", "Bonus", "Enchant", "Sale"])) # Muestra los datos almacenados en la variable de forma ordenada en una tabla.
     logWrite(f"Se ejecutó la función 'showItem()' correctamente.")
 
 def searchItem(): # Función que crea una query dependiendo de los filtros de búsqueda y la pasa a la función showItem().
-    
-    query = 'SELECT * FROM "Armaduras" ORDER BY Level' # Consulta SQL a ser ejecutada.
+    query = 'SELECT rowid, * FROM "Armaduras" ORDER BY rowid' # Consulta SQL a ser ejecutada.
     dataSearch = { # Diccionario con los datos por defecto de la búsqueda.
         "Nombre": "",
         "Tipo": "",
@@ -97,17 +96,80 @@ def searchItem(): # Función que crea una query dependiendo de los filtros de b�
             print("\tFILTROS ACTUALES\n")
             print(f"[Nombre]: {dataSearch['Nombre']}\n[Tipo]: {dataSearch['Tipo']}\n[Level]: {dataSearch['Nivel']}\n") # Muestra los filtros actuales.
             showItem(query) # Mostrar los datos con la query actual.
-
             print("\n\tPARÁMETROS DE BÚSQUEDA\n[i] Enter para omitir filtro, 'Ctrl+C' para volver al menú anterior\n")
 
             for data in dataSearch.keys(): # Itera sobre los parámetros del filtro para que el usuario pueda elegir que datos buscar.
                 dataSearch[data] = input(f'[{data}]: ') # Solicita al usuario el tipo de item que busca basado en sus datos.
 
-            query = f'SELECT * FROM "Armaduras" WHERE Name LIKE "%{dataSearch["Nombre"]}%" AND Type LIKE "%{dataSearch["Tipo"]}%" AND Level LIKE "%{dataSearch["Nivel"]}%" ORDER BY Level' # Query que toma los datos del filtro indicados por el usuario y los solicita a la base de datos.
+            query = f'SELECT rowid, * FROM "Armaduras" WHERE Name LIKE "%{dataSearch["Nombre"]}%" AND Type LIKE "%{dataSearch["Tipo"]}%" AND Level LIKE "%{dataSearch["Nivel"]}%" ORDER BY rowid' # Query que toma los datos del filtro indicados por el usuario y los solicita a la base de datos.
+
         except KeyboardInterrupt: # Para salir del menú de búsqueda, se debe presionar Ctrl+C.
             break
 
     logWrite(f"Se ejecutó la función 'searchItem()' correctamente.")
+
+def updateItem():
+    id_item = ""
+    while True:
+        try:
+            showHeader()
+            print("\tREGISTRANDO ITEM\n")
+            id_item = input("[?] Indique el ID del Item a modificar, 'Ctrl+C' para volver al menú anterior: ")
+            if id_item.isnumeric():
+                data = {
+                    "Name" : "",
+                    "Type" : "",
+                    "Level" : "",
+                    "Armour" : "",
+                    "PrimaryStat" : "",
+                    "AmountPrimaryStat" : "",
+                    "Stamina" : "",
+                    "SecondaryStat" : "",
+                    "AmountSecondaryStat" : "",
+                    "BonusModifier1" : "",
+                    "BonusModifier2" : "",
+                    "Enchant" : "",
+                    "Sale" : ""
+                }
+                
+                for key in data.keys():
+                    data[key] = input(f'[{key}]: ')
+
+                query = f'UPDATE "Armaduras" SET Name = "{data["Name"]}", Type = "{data["Type"]}", Level = {data["Level"]}, Armour = {data["Armour"]}, PrimaryStat = "{data["PrimaryStat"]}", AmountPrimaryStat = {data["AmountPrimaryStat"]}, Stamina = {data["Stamina"]}, SecondaryStat = "{data["SecondaryStat"]}", AmountSecondaryStat = {data["AmountSecondaryStat"]}, BonusModifier1 = "{data["BonusModifier1"]}", BonusModifier2 = "{data["BonusModifier2"]}", Enchant = "{data["Enchant"]}", Sale = "{data["Sale"]}" WHERE ROWID = {id_item}'
+
+                cursor, conn = createCursor("MirageItems.db") # Obtiene el objeto cursor y conn de la base de datos.
+                cursor.execute(query) # Se ejecuta la solicitud pasada como argumento.
+                conn.commit() # Aplicar cambios
+                conn.close() # Cerrar conexión
+
+            else:
+                input("[!] El ID indicado no es correcto, intente de nuevo")
+                pass
+
+        except KeyboardInterrupt: # Para salir del menú de modificación, se debe presionar Ctrl+C.
+            break
+
+    logWrite(f"Se ejecutó la función 'updateItem()' correctamente.")
+
+def deleteItem(): # Función que elimina un item seleccionado.
+    while True:
+        try:
+            showHeader()
+            print("\tBORRANDO ITEM\n")
+            id_item = input("[?] Indique el ID del Item a borrar, 'Ctrl+C' para volver al menú anterior: ")
+            query = f'DELETE FROM "Armaduras" WHERE ROWID = {id_item}'
+
+            cursor, conn = createCursor("MirageItems.db") # Obtiene el objeto cursor y conn de la base de datos.
+            cursor.execute(query) # Se ejecuta la solicitud pasada como argumento.
+            conn.commit() # Aplicar cambios
+            conn.close() # Cerrar conexión
+            input(f"[i] El item con ID {id_item} fue eliminado.")
+
+        except KeyboardInterrupt: # Para salir del menú de eliminación, se debe presionar Ctrl+C.
+            break
+        except:
+            input(f"[!] El ID indicado no es correcto, intente de nuevo.")
+    logWrite(f"Se ejecutó la función 'deleteItem()' correctamente.")
 
 def showHeader(): # Función que limpia la pantalla, muestra el banner y la información.
     clearScreen()
@@ -129,12 +191,13 @@ def main(): # Función principal.
         elif option == "2": # Buscar Item.
             searchItem()
         elif option == "3": # Modificar Item
-            pass
+            updateItem()
         elif option == "4": # Borrar Item.
-            pass
+            deleteItem()
         elif option == "5": # Modo Venta
             pass
         elif option == "6": # Salir.
+            print("\nCerrando programa...")
             break
         else:
             input("[!] La opción indicada es incorrecta.")
@@ -144,58 +207,3 @@ if __name__ == '__main__':
         main()
     except KeyboardInterrupt: # En caso que se detenga la ejecución a través del teclado (Ctrl+C) mostrará un mensaje y cerrará el programa
         print("\nCerrando programa...")
-
-
-# ------------------- Código Reciclado -------------------
-
-# insertRow('Crystal Mask', 'Light', 80, 3, 'Magic', 27, 9, 'N/A', 0, 'Empowered', '3 HP Regen', 'N/A', 'TRUE')
-# insertRow('Indigo Hat', 'Light', 60, 3, 'Magic', 21, 7, 'N/A', 0, 'Critic', 'OmniResist', 'N/A', 'FALSE')
-# insertRow('Soldier Helmet', 'Medium', 40, 3, 'Distance', 10, 5, 'Defence', 10, '2% Thorns', '2 HP Regen', 'N/A', 'FALSE')
-# insertRow('Arnisium Vest', 'Light', 70, 3, 'Magic', 24, 8, 'N/A', 0, 'Empowered', '2% Potions', 'N/A', 'TRUE')
-
-# if __name__ == '__main__':
-#     create_connection(r"C:\sqlite\db\pythonsqlite.db")
-
-#for i in data:
-    #print(tabulate(data))
-    # print("------------------------------------------")
-    # print(f"Nombre: {i[0]}")
-    # print(f"Tipo: {i[1]}")
-    # print(f"Nivel Requerido: {i[2]}")
-    # print(f"Armadura: {i[3]}")
-    # print(f"Nombre del Stat Primario: {i[4]}")
-    # print(f"Cantidad del Stat Primario: {i[5]}")
-    # print(f"Cantidad de Stamina: {i[6]}")
-    # print(f"Nombre del Stat Secundario: {i[7]}")
-    # print(f"Cantidad del Stat Secundario: {i[8]}")
-    # print(f"Nombre del Primer Bonus: {i[9]}")
-    # print(f"Nombre del Segundo Bonus: {i[10]}")
-    # print(f"Encantamiento: {i[11]}")
-
-# def createDB(): # Esta función crea una base de datos.
-#     conn = sql.connect("MirageItems.db") # Establece conexión con la base de datos, y en caso de no existir, la crea.
-#     conn.commit() # Se utiliza el método "commit()" del objeto creado para realizar cambios.
-#     conn.close() # Se cierra la conexión a la base de datos.
-
-# def createTable(): # Función que crea tablas en la base de datos creada.
-#     cursor, conn = createCursor("MirageItems.db") # Obtiene el objeto cursor y conn de la base de datos.
-#     query = """CREATE TABLE IF NOT EXISTS Armaduras (
-#         Name varchar(100) NOT NULL,
-#         Type varchar(100) NOT NULL,
-#         Level int,
-#         Armour int,
-#         PrimaryStat varchar(100) NOT NULL,
-#         AmountPrimaryStat int NOT NULL,
-#         Stamina int NOT NULL,
-#         SecondaryStat varchar(100),
-#         AmountSecondaryStat int,
-#         BonusModifier1 varchar(100),
-#         BonusModifier2 varchar(100),
-#         Enchant varchar(100),
-#         Sale varchar(100)
-#         )""" # Solicitud SQL.
-#     cursor.execute(query) # Ejecutar una solicitud con el cursor.
-#     conn.commit() # Aplicar cambios.
-#     conn.close() # Cerrar conexión.
-
-# createTable()

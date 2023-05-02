@@ -1,7 +1,6 @@
 import sqlite3 as sql
 import os, time
 from sqlite3 import Error
-from tabulate import tabulate
 
 BANNER = """███╗   ███╗██╗   ██╗    ██╗████████╗███████╗███╗   ███╗███████╗
 ████╗ ████║╚██╗ ██╔╝    ██║╚══██╔══╝██╔════╝████╗ ████║██╔════╝
